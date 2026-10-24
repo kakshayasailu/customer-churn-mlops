@@ -1,0 +1,8 @@
+
+.git/
+.github/
+__pycache__/
+*.pyc
+test_*.py
+customer_churn.csv
+release_candidate/
