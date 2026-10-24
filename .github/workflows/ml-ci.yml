@@ -124,3 +124,14 @@ jobs:
           docker push "$IMAGE_ID:latest"
           docker push "$IMAGE_ID:sha-${{ github.sha }}"
 
+            - name: Wait for API
+        run: |
+          for i in {1..10}; do
+            if curl -fsS http://localhost:5000/health; then
+              echo "API is healthy"
+              exit 0
+            fi
+            sleep 3
+          done
+          docker logs churn-api
+          exit 1
