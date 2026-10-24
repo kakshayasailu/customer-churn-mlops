@@ -71,3 +71,29 @@ jobs:
           retention-days: 7
       - name: Build Docker image
         run: docker build -t customer-churn-api:latest .
+
+ 
+      - name: Run Docker container
+        run: |
+          docker run -d --name churn-api -p 5000:5000 customer-churn-api:latest
+
+      - name: Wait for API
+        run: |
+          for i in {1..10}; do
+            if curl -fsS http://localhost:5000/health; then
+              echo "API is healthy"
+              exit 0
+            fi
+            sleep 3
+          done
+          docker logs churn-api
+          exit 1
+
+      - name: Test prediction API
+        run: |
+          curl -f http://localhost:5000/
+          curl -f http://localhost:5000/health
+
+      - name: Stop Docker container
+        if: always()
+        run: docker rm -f churn-api || true
