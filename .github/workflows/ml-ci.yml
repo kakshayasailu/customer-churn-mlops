@@ -48,6 +48,7 @@ jobs:
       - name: Run ML pipeline tests
         run: python -m unittest test_ml_pipeline.py -v
 
+
         
       - name: Run prediction API tests
         run: python -m unittest test_app.py -v
@@ -68,4 +69,5 @@ jobs:
           path: release_candidate/
           if-no-files-found: error
           retention-days: 7
-
+      - name: Build Docker image
+        run: docker build -t customer-churn-api:latest .
