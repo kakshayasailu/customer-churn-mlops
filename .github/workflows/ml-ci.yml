@@ -47,3 +47,25 @@ jobs:
 
       - name: Run ML pipeline tests
         run: python -m unittest test_ml_pipeline.py -v
+
+        
+      - name: Run prediction API tests
+        run: python -m unittest test_app.py -v
+
+      - name: Prepare release candidate
+        run: |
+          mkdir -p release_candidate
+          cp app.py release_candidate/
+          cp customer_churn_model.pkl release_candidate/
+          cp metrics.json release_candidate/
+          cp requirements.txt release_candidate/
+          printf "Customer Churn Prediction API\nRun: python app.py\nHealth: GET /health\nPrediction: POST /predict\n" > release_candidate/DEPLOYMENT.txt
+
+      - name: Upload release candidate
+        uses: actions/upload-artifact@v4
+        with:
+          name: customer-churn-ml-release
+          path: release_candidate/
+          if-no-files-found: error
+          retention-days: 7
+
