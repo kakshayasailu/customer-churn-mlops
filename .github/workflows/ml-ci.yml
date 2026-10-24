@@ -10,6 +10,7 @@ on:
 
 permissions:
   contents: read
+  packages: write
 
 jobs:
   train-and-test:
@@ -97,3 +98,29 @@ jobs:
       - name: Stop Docker container
         if: always()
         run: docker rm -f churn-api || true
+
+      
+      - name: Prepare GHCR image name
+        run: |
+          IMAGE_ID="ghcr.io/${{ github.repository_owner }}/customer-churn-api"
+          IMAGE_ID=$(echo "$IMAGE_ID" | tr '[:upper:]' '[:lower:]')
+          echo "IMAGE_ID=$IMAGE_ID" >> "$GITHUB_ENV"
+
+      - name: Log in to GitHub Container Registry
+        if: github.event_name != 'pull_request'
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io \
+            -u "${{ github.actor }}" --password-stdin
+
+      - name: Tag Customer Churn image
+        if: github.event_name != 'pull_request'
+        run: |
+          docker tag customer-churn-api:latest "$IMAGE_ID:latest"
+          docker tag customer-churn-api:latest "$IMAGE_ID:sha-${{ github.sha }}"
+
+      - name: Publish image to GHCR
+        if: github.event_name != 'pull_request'
+        run: |
+          docker push "$IMAGE_ID:latest"
+          docker push "$IMAGE_ID:sha-${{ github.sha }}"
+
